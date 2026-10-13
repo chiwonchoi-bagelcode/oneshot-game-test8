@@ -434,7 +434,7 @@ export function decorate(id: GuestId | 'butler', rig: Rig): Props {
       // the HAT: wide brim + crown + feathers + flowers
       const hat = new THREE.Group();
       const brimMat = clay('#7d4aa6', { normal: 0.6, rough: 0.5 });
-      const brim = cylinder(0.3, 0.3, 0.016, brimMat, 32);
+      const brim = cylinder(0.24, 0.24, 0.016, brimMat, 32);
       hat.add(brim);
       const crown = blob(a * 0.95, 0.07, c * 0.95, brimMat, 18);
       crown.position.y = 0.035;
@@ -456,8 +456,9 @@ export function decorate(id: GuestId | 'butler', rig: Rig): Props {
         fl.position.set(Math.cos(ang) * a * 0.95, 0.045, Math.sin(ang) * c * 0.95);
         hat.add(fl);
       }
-      hat.position.set(0, b * 0.6, -0.01);
-      hat.rotation.x = -0.12;
+      // worn tipped back so her face stays visible from the high camera
+      hat.position.set(0, b * 0.68, -0.05);
+      hat.rotation.x = -0.42;
       h.add(hat);
       props.hat = hat;
       props.hasHat = true;

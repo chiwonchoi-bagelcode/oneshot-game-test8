@@ -37,7 +37,7 @@ body {
 #ui .interactive, #ui button { pointer-events: auto; }
 
 /* ---------------------------------------------------------------- top HUD */
-.hud { transition: opacity 0.4s; }
+.hud { transition: opacity 0.4s; position: relative; z-index: 1; }
 .hud.hidden { opacity: 0; }
 .topbar {
   position: absolute; top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px;
@@ -129,7 +129,7 @@ body {
   100% { opacity: 0; transform: translate(-50%, -160%) scale(1); }
 }
 .card {
-  position: absolute; left: 50%; top: 22%; transform: translateX(-50%); min-width: 230px; max-width: 86%;
+  position: absolute; z-index: 6; left: 50%; top: 22%; transform: translateX(-50%); min-width: 230px; max-width: 86%;
   background: var(--cream); border: 3px solid var(--gold); border-radius: 16px; padding: 10px 16px 12px;
   box-shadow: var(--shadow); text-align: center; animation: cardIn 2.8s ease forwards;
 }
@@ -144,7 +144,7 @@ body {
   100% { opacity: 0; transform: translateX(-50%) translateY(-14px) scale(0.92); }
 }
 .hint {
-  position: absolute; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+  position: absolute; z-index: 5; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%);
   width: min(92%, 380px); background: rgba(251, 244, 228, 0.95); border-radius: 14px; padding: 9px 14px;
   box-shadow: var(--shadow); font-size: 15px; text-align: center; line-height: 1.35; border: 2px solid #e6d3a8;
   transition: opacity 0.35s, transform 0.35s; opacity: 0;
@@ -164,7 +164,7 @@ body {
 
 /* ---------------------------------------------------------------- screens */
 .screen {
-  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center;
   pointer-events: auto; padding: 24px; text-align: center; transition: opacity 0.5s;
 }
 .screen.fade { opacity: 0; pointer-events: none; }

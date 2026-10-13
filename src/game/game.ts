@@ -492,6 +492,18 @@ export class Game {
   private tips() {
     if (this.clock < this.nextTip) return;
     this.nextTip = this.clock + 38;
+    const active = ctx.guests.filter((g) => g.active);
+    const rev = active.find((g) => g.id === 'reverend');
+    // the stubborn ones get a nudge toward the trick that works on them
+    if (rev && active.length <= 2) {
+      this.hud.hint('💡 무던한 목사님은 웬만해선 안 질려요. 그의 접시에 앉아 포크에 실려 가다가… 입 바로 앞에서 탈출!', 6);
+      return;
+    }
+    const granny = active.find((g) => g.id === 'granny');
+    if (granny && active.length <= 3 && !this.pranksFound.has('trumpet')) {
+      this.hud.hint('💡 귀 어두운 할머니도 보청 나팔 속 윙윙 소리는 들립니다', 5);
+      return;
+    }
     const undiscovered = PRANKS.filter((p) => !this.pranksFound.has(p.id) && p.id !== 'cake' && p.id !== 'gulp');
     if (!undiscovered.length) return;
     this.hud.hint('💡 ' + pick(undiscovered).hint, 5);

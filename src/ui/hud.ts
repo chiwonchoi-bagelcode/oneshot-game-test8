@@ -205,7 +205,7 @@ export class Hud {
       const s = el('div', 'screen interactive');
       s.style.background = 'rgba(30,40,20,0.55)';
       const p = el('div', 'panel');
-      p.innerHTML = `<h2>잠시 쉬는 중</h2><div class="journal">${this.journalHTML(ctx.game.pranksFound)}</div>`;
+      p.innerHTML = `<h2>잠시 쉬는 중</h2><div class="row" id="pauserow" style="margin:10px 0 6px"></div><div class="journal">${this.journalHTML(ctx.game.pranksFound)}</div>`;
       const row = el('div', 'row');
       const resume = el('button', 'bigbtn interactive', '계속하기');
       const restart = el('button', 'bigbtn sec interactive', '처음부터');
@@ -220,7 +220,8 @@ export class Hud {
         this.onRetry();
       });
       row.append(resume, restart);
-      p.append(row);
+      row.style.margin = '10px 0 6px';
+      (p.querySelector('#pauserow') as HTMLElement).replaceWith(row);
       s.append(p);
       this.root.append(s);
       this.screen = s;

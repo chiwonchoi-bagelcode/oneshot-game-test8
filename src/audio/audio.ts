@@ -90,7 +90,7 @@ export class AudioEngine {
     this.voiceBus = ac.createGain();
     this.voiceBus.gain.value = 0.75;
     this.musicBus = ac.createGain();
-    this.musicBus.gain.value = 0.2;
+    this.musicBus.gain.value = 0.34;
     this.sfxBus.connect(this.master);
     this.voiceBus.connect(this.master);
     // gramophone colouring
@@ -222,9 +222,9 @@ export class AudioEngine {
     near = smoothstep(0.75, 0.08, best);
     const speedN = clamp01(fly.speed / 5);
     let target = 0;
-    if (fly.state === 'flying') target = 0.2 + speedN * 0.16;
-    else if (fly.state === 'hover') target = 0.2;
-    target *= 1 + near * 1.7;
+    if (fly.state === 'flying') target = 0.34 + speedN * 0.22;
+    else if (fly.state === 'hover') target = 0.32;
+    target *= 1 + near * 2.0;
     if (G.game?.hornBlast) target *= 1.6;
     this.kick = Math.max(0, this.kick - dt * 3);
     this.landBlip = Math.max(0, this.landBlip - dt * 6);

@@ -318,10 +318,8 @@ export class Butler implements MessTarget {
         r.sideLeanT = w * 0.25;
         r.leanT = Math.cos(this.wobbleT * 7) * 0.15;
         L.target.copy(r.torso.localToWorld(V3(0.28 + w * 0.15, 0.52 + Math.abs(w) * 0.1, 0.22)));
-        this.tray.rotation.z = w * 0.3;
         r.lookAt(r.noseTip.getWorldPosition(V3()).add(r.forwardWorld(V3()).multiplyScalar(0.2)));
         if (!onNose) {
-          this.tray.rotation.z = 0;
           this.st = 'walk';
           this.stT = 0;
         } else if (this.wobbleT > 1.8) {
@@ -354,6 +352,14 @@ export class Butler implements MessTarget {
         break;
     }
     r.update(dt, t);
+    // keep the tray level in world space (tilting only when he teeters)
+    if (this.hasTray && this.tray.parent === L.hand) {
+      L.hand.updateWorldMatrix(true, false);
+      const pq = new THREE.Quaternion();
+      L.hand.getWorldQuaternion(pq);
+      const want = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, this.root.rotation.y, this.st === 'wobble' ? Math.sin(this.wobbleT * 9) * 0.3 : 0));
+      this.tray.quaternion.copy(pq.invert().multiply(want));
+    }
   }
 
   private servingTarget(t: [number, number]) {

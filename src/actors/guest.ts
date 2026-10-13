@@ -337,7 +337,7 @@ export class Guest implements MessTarget {
       away.normalize().multiplyScalar(1.2);
       ctx.mess.launchObject(tp, from, away.setY(2.4), 'toupee', '#3b2416', 0.06, this);
       ctx.audio.sfx('fwip', from);
-      this.addFed(0.5, 'toupee', true);
+      this.addFed(0.38, 'toupee', true);
       ctx.prank('toupee', from);
       ctx.emit({ type: 'toupee', pos: from, loud: 0.9, gross: 0.05, source: by, victim: this, chain: true });
     }
@@ -1193,6 +1193,10 @@ export class Guest implements MessTarget {
     if (this.laughT < -randRange(8, 16) && this.fed < 0.35) {
       this.laughT = 1.2;
       ctx.audio.voice(this, 'laugh');
+    }
+    if (this.p.hostess && !this.tracking && this.fed < 0.6) {
+      // nose in the air
+      r.headPitchT = -0.28;
     }
     if (this.dozing) {
       r.headPitchT = 0.55;

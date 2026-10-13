@@ -73,6 +73,8 @@ export class Fly {
   private marker: THREE.Mesh;
   private markerT = 1;
   private stars: THREE.Sprite[] = [];
+  private waves: { s: THREE.Sprite; t: number }[] = [];
+  private waveT = 0;
   private bodyMat: THREE.MeshPhysicalMaterial;
   private trail: THREE.Mesh;
   private trailPts: THREE.Vector3[] = [];
@@ -183,6 +185,32 @@ export class Fly {
       s.visible = false;
       ctx.scene.add(s);
       this.stars.push(s);
+    }
+
+    // buzz "sound waves": make the noise visible
+    const waveTex = (() => {
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 64;
+      const g = cv.getContext('2d')!;
+      g.lineCap = 'round';
+      for (const [style, wdt] of [['rgba(50,30,10,0.6)', 13], ['rgba(255,236,140,1)', 7]] as const) {
+        g.strokeStyle = style;
+        g.lineWidth = wdt;
+        for (const a0 of [-0.6, Math.PI - 0.6]) {
+          g.beginPath();
+          g.arc(32, 32, 22, a0, a0 + 1.2);
+          g.stroke();
+        }
+      }
+      const t = new THREE.CanvasTexture(cv);
+      t.colorSpace = THREE.SRGBColorSpace;
+      return t;
+    })();
+    for (let i = 0; i < 6; i++) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: waveTex, transparent: true, depthWrite: false, opacity: 0 }));
+      sp.visible = false;
+      ctx.scene.add(sp);
+      this.waves.push({ s: sp, t: 1 });
     }
 
     // speed trail ribbon
@@ -435,6 +463,7 @@ export class Fly {
     this.animateBody(dt, t);
     this.updateShadowAndGlint(dt, t);
     this.updateTrail(dt);
+    this.updateWaves(dt);
     this.markerT = Math.min(1, this.markerT + dt * 2.2);
     const mm = this.marker.material as THREE.MeshBasicMaterial;
     mm.opacity = (1 - this.markerT) * 0.9;
@@ -657,6 +686,32 @@ export class Fly {
       if (!s.visible) continue;
       const a = t * 6 + (i / this.stars.length) * Math.PI * 2;
       s.position.set(this.pos.x + Math.cos(a) * 0.07, this.pos.y + 0.07, this.pos.z + Math.sin(a) * 0.07);
+    }
+  }
+
+  private updateWaves(dt: number) {
+    const loud = this.loudness;
+    this.waveT -= dt;
+    if (loud > 0 && this.waveT <= 0) {
+      this.waveT = 0.2 - Math.min(0.1, loud * 0.06);
+      const w = this.waves.find((x) => x.t >= 1);
+      if (w) {
+        w.t = 0;
+        w.s.position.copy(this.pos);
+        (w.s.material as THREE.SpriteMaterial).rotation = Math.random() * Math.PI;
+        w.s.userData.k = loud;
+      }
+    }
+    for (const w of this.waves) {
+      if (w.t >= 1) {
+        w.s.visible = false;
+        continue;
+      }
+      w.t = Math.min(1, w.t + dt * 2.6);
+      w.s.visible = true;
+      const k = w.s.userData.k as number;
+      w.s.scale.setScalar(0.08 + w.t * (0.22 + k * 0.12));
+      (w.s.material as THREE.SpriteMaterial).opacity = Math.pow(1 - w.t, 0.7) * 0.95 * Math.min(1, k * 1.4);
     }
   }
 
