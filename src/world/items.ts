@@ -556,6 +556,7 @@ export class JellyItem extends Item {
     }
     this.state = 'launched';
     this.jelly.visible = false;
+    for (const sf of this.surfaces) sf.enabled = false;
     if (this.stink) this.stink.visible = false;
     const from = this.worldPos(V3()).setY(TABLE.y + 0.07);
     ctx.mess.launchJelly(from, imp.dir, this.color, imp.source);

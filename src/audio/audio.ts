@@ -608,7 +608,10 @@ export class AudioEngine {
   // ---------------------------------------------------------------------------
   // Music: a gramophone minuet that frays as the party falls apart
   // ---------------------------------------------------------------------------
+  private session = 0;
+
   startMusic() {
+    this.session++;
     this.unlock();
     this.musicOn = true;
     this.mood = 'normal';
@@ -710,7 +713,9 @@ export class AudioEngine {
       this.tone(o, t + at, d, 'sawtooth', mtof(m - 24), mtof(m - 24), 0.12, 0.01);
     }
     [84, 88, 91, 96, 100].forEach((m, i) => this.bell(o, t + 1.6 + i * 0.07, mtof(m), 0.18));
+    const token = ++this.session;
     setTimeout(() => {
+      if (token !== this.session) return;
       this.musicOn = true;
       this.mood = 'triumph';
       this.musicT = this.ac ? this.ac.currentTime + 0.1 : 0;

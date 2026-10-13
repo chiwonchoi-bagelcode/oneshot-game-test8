@@ -31,6 +31,13 @@ export interface Results {
 
 export const DURATION = 420; // 3:00pm → 5:00pm
 
+/** Korean subject particle: 이 after a final consonant, 가 otherwise. */
+function iga(word: string) {
+  const c = word.charCodeAt(word.length - 1);
+  if (c < 0xac00 || c > 0xd7a3) return word + '이(가)';
+  return word + ((c - 0xac00) % 28 ? '이' : '가');
+}
+
 export class Game {
   phase: Phase = 'title';
   lives = 3;
@@ -110,6 +117,8 @@ export class Game {
     this.cakeOpen = false;
     this.pranksFound = new Set();
     this.chain = 0;
+    this.chainT = -9;
+    this.hornT = 0;
     this.maxChain = 0;
     this.score = 0;
     this.closeCalls = 0;
@@ -134,6 +143,8 @@ export class Game {
         m.geometry.dispose();
       }
     });
+    this.stage.sun.shadow.map?.dispose();
+    this.stage.sun.dispose();
     this.build();
   }
 
@@ -328,7 +339,7 @@ export class Game {
   onSwatWindup(g: Guest) {
     if (!this.hintFlags.has('windup')) {
       this.hintFlags.add('windup');
-      this.hud.hint(`${g.name}이(가) 반격 준비! 내려치기 전에 다른 곳을 탭!`, 2.6, true);
+      this.hud.hint(`${iga(g.name)} 반격 준비! 내려치기 전에 다른 곳을 탭!`, 2.6, true);
     }
   }
 
@@ -370,6 +381,8 @@ export class Game {
     ctx.butler.leave();
     this.hud.banner('모두 떠났다!', '텅 빈 식탁 한가운데, 케이크 위에 내려앉아라');
     ctx.audio.musicMood('triumph');
+    // already sitting on the cake? then it's ours right now
+    if (ctx.fly.state === 'landed' && ctx.fly.landedOn?.kind === 'cake') ctx.later(1.2, () => this.phase === 'play' && this.victory());
   }
 
   // ---------------------------------------------------------------------------

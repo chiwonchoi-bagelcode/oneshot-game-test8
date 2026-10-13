@@ -269,7 +269,7 @@ export class Butler implements MessTarget {
           if (Math.floor(r.runPhase / Math.PI) !== Math.floor((r.runPhase - dt * 7) / Math.PI)) ctx.audio.sfx('step', pos, 0.2);
         }
         // spilled wine underfoot?
-        if (this.hasTray && ctx.mess.slipAt(pos)) {
+        if (this.hasTray && this.st !== 'leave' && ctx.mess.slipAt(pos)) {
           ctx.audio.sfx('slip', pos);
           ctx.prank('slip', pos);
           this.st = 'fall';
@@ -338,7 +338,9 @@ export class Butler implements MessTarget {
         f.open = 0.6;
         f.bulge = 0.8;
         L.target.copy(r.headWorld(V3()).add(V3(0.2, 0.3, 0)));
-        if (this.stT > 1.8) {
+        if (this.stT > 1.8 && ctx.game.cakeOpen) {
+          this.leave();
+        } else if (this.stT > 1.8) {
           // dust off, fetch another tray
           this.st = 'fetch';
           this.stT = 0;

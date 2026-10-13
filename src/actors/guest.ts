@@ -315,6 +315,8 @@ export class Guest implements MessTarget {
   private startReact(kind: ReactKind, dur: number, after: GState = 'idle') {
     if (this.st === 'flee' || this.st === 'gone' || this.st === 'slip') return;
     this.dropHeld();
+    // interrupted mid-swing: put the weapon back where it lives
+    if (this.st === 'windup' || this.st === 'strike' || this.st === 'recover') this.equipWeapon(this.weaponArm, false);
     this.react = kind;
     this.reactDur = dur;
     this.reactAfter = after;
@@ -767,6 +769,8 @@ export class Guest implements MessTarget {
   }
 
   setState(s: GState) {
+    const swinging = this.st === 'windup' || this.st === 'strike' || this.st === 'recover';
+    if (swinging && s !== 'strike' && s !== 'recover') this.equipWeapon(this.weaponArm, false);
     this.st = s;
     this.stT = 0;
     this.phase = 0;
@@ -1384,7 +1388,7 @@ export class Guest implements MessTarget {
     const fly = ctx.fly;
     const arm = this.isSelfNoseSlap() ? r.arms[0] : this.weaponArm;
     const sh = r.torso.localToWorld(V3().copy(arm.shoulder));
-    const wind = Math.max(0.32, this.p.windup * (1 - this.rageBoost * 0.08));
+    const wind = Math.max(0.44, this.p.windup * (1 - this.rageBoost * 0.08));
     const selfSlap = this.isSelfNoseSlap();
     const prepT = wind * 0.45;
     const raiseT = wind * 0.55;
@@ -1439,7 +1443,8 @@ export class Guest implements MessTarget {
       this.faceOverride = { browAng: 1, smile: -0.5, open: 0.5 };
       if (this.stT >= dur) {
         this.doImpact(selfSlap);
-        this.setState('recover');
+        // a triumphant grin or a stinging self-slap takes over; otherwise recover
+        if (this.st === 'strike') this.setState('recover');
       }
       return this.aim;
     }
@@ -1566,7 +1571,7 @@ export class Guest implements MessTarget {
     }
     if (!flyHit) {
       // missed!
-      this.rageBoost = Math.min(4, this.rageBoost + 1);
+      this.rageBoost = Math.min(3, this.rageBoost + 1);
       this.irritation = Math.max(this.irritation * 0.75, this.p.swatAt * 0.8);
       this.swatCD = this.p.cooldown * (this.p.reads ? 0.7 : 1);
       ctx.game.onSwatMiss(this, aim, hitSomething || tableHit);
@@ -1861,9 +1866,8 @@ export class Guest implements MessTarget {
     this.gone = true;
     this.active = false;
     this.rig.root.visible = false;
-    this.noseSurface.enabled = false;
-    this.headSurface.enabled = false;
-    if (this.trumpetSurface) this.trumpetSurface.enabled = false;
+    // every landing spot on the person goes with them (their plate stays behind)
+    for (const s of ctx.surfaces) if (s.guest === this && !s.item) s.enabled = false;
     ctx.game.onGuestGone(this);
   }
 

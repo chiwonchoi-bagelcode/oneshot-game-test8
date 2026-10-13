@@ -18,6 +18,7 @@ export interface TapTarget {
 }
 
 const SCALE = 1.25;
+let waveTexture: THREE.Texture | null = null;
 
 export class Fly {
   readonly root = new THREE.Group();
@@ -188,7 +189,7 @@ export class Fly {
     }
 
     // buzz "sound waves": make the noise visible
-    const waveTex = (() => {
+    const waveTex = waveTexture ?? (waveTexture = (() => {
       const cv = document.createElement('canvas');
       cv.width = cv.height = 64;
       const g = cv.getContext('2d')!;
@@ -205,7 +206,7 @@ export class Fly {
       const t = new THREE.CanvasTexture(cv);
       t.colorSpace = THREE.SRGBColorSpace;
       return t;
-    })();
+    })());
     for (let i = 0; i < 6; i++) {
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: waveTex, transparent: true, depthWrite: false, opacity: 0 }));
       sp.visible = false;
@@ -335,14 +336,18 @@ export class Fly {
   /** Swatted! Returns false if invulnerable. */
   squash(): boolean {
     if (this.invuln > 0 || this.state === 'stunned' || this.state === 'dead' || this.state === 'scripted') return false;
-    if (this.state === 'landed') this.takeoffFrom();
+    const wasLanded = this.state === 'landed';
     this.state = 'stunned';
     this.stunT = 1.25;
     this.vel.set(0, 0, 0);
     this.speed = 0;
-    // fall onto whatever is below
-    const onTable = Math.abs(this.pos.x) < TABLE.halfW && Math.abs(this.pos.z) < TABLE.halfL;
-    if (!this.anchor) this.pos.y = Math.max(onTable ? TABLE.y + 0.01 : 0.01, Math.min(this.pos.y, this.pos.y));
+    // swatted out of the air: drop flat onto whatever is below
+    if (!wasLanded) {
+      this.anchor = null;
+      this.landedOn = null;
+      const onTable = Math.abs(this.pos.x) < TABLE.halfW && Math.abs(this.pos.z) < TABLE.halfL;
+      this.pos.y = onTable && this.pos.y > TABLE.y ? TABLE.y + 0.012 : 0.012;
+    }
     return true;
   }
 

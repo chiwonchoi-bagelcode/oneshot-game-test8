@@ -38,7 +38,7 @@ body {
 
 /* ---------------------------------------------------------------- top HUD */
 .hud { transition: opacity 0.4s; position: relative; z-index: 1; }
-.hud.hidden { opacity: 0; }
+.hud.hidden, .hud.hidden * { opacity: 0; pointer-events: none !important; }
 .topbar {
   position: absolute; top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px;
   display: flex; align-items: center; justify-content: space-between; gap: 6px;

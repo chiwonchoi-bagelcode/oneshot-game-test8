@@ -1,6 +1,17 @@
 import * as THREE from 'three';
 import { rand, randRange } from '../core/math';
 
+const memo = new Map<string, THREE.Texture>();
+/** Textures are made once per page; rebuilding the scene on retry reuses them. */
+function once(key: string, make: () => THREE.Texture) {
+  let t = memo.get(key);
+  if (!t) {
+    t = make();
+    memo.set(key, t);
+  }
+  return t;
+}
+
 function canvas(w: number, h = w) {
   const c = document.createElement('canvas');
   c.width = w;
@@ -100,6 +111,7 @@ export function makeClayNormal(size = 256): THREE.Texture {
 }
 
 export function makeLawnTexture(): THREE.Texture {
+  return once('makeLawnTexture', () => {
   const c = canvas(512);
   const ctx = c.getContext('2d')!;
   const stripes = 4;
@@ -128,9 +140,11 @@ export function makeLawnTexture(): THREE.Texture {
     ctx.fill();
   }
   return tex(c, true, true);
+  });
 }
 
 export function makeGravelTexture(): THREE.Texture {
+  return once('makeGravelTexture', () => {
   const c = canvas(256);
   const ctx = c.getContext('2d')!;
   ctx.fillStyle = '#d8c7a2';
@@ -144,9 +158,11 @@ export function makeGravelTexture(): THREE.Texture {
     ctx.fill();
   }
   return tex(c, true, true);
+  });
 }
 
 export function makeClothTexture(): THREE.Texture {
+  return once('makeClothTexture', () => {
   const c = canvas(256);
   const ctx = c.getContext('2d')!;
   ctx.fillStyle = '#fbf6ec';
@@ -170,9 +186,11 @@ export function makeClothTexture(): THREE.Texture {
     ctx.fillRect(rand() * 256, rand() * 256, 2, 2);
   }
   return tex(c, true, true);
+  });
 }
 
 export function makeNewsprintTexture(): THREE.Texture {
+  return once('makeNewsprintTexture', () => {
   const c = canvas(256, 320);
   const ctx = c.getContext('2d')!;
   ctx.fillStyle = '#ece4cf';
@@ -194,9 +212,11 @@ export function makeNewsprintTexture(): THREE.Texture {
   ctx.fillStyle = 'rgba(60,55,50,0.6)';
   ctx.fillRect(92, 120, 72, 56);
   return tex(c);
+  });
 }
 
 export function makeWingTexture(): THREE.Texture {
+  return once('makeWingTexture', () => {
   const c = canvas(128, 64);
   const ctx = c.getContext('2d')!;
   const g = ctx.createLinearGradient(0, 0, 128, 0);
@@ -221,10 +241,12 @@ export function makeWingTexture(): THREE.Texture {
   ctx.lineTo(96, 54);
   ctx.stroke();
   return tex(c);
+  });
 }
 
 /** Soft radial alpha blob (shadows, glows). */
 export function makeBlobTexture(inner = 'rgba(0,0,0,0.55)', outer = 'rgba(0,0,0,0)'): THREE.Texture {
+  return once('blob' + inner + outer, () => {
   const c = canvas(128);
   const ctx = c.getContext('2d')!;
   const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 62);
@@ -233,10 +255,12 @@ export function makeBlobTexture(inner = 'rgba(0,0,0,0.55)', outer = 'rgba(0,0,0,
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 128, 128);
   return tex(c);
+  });
 }
 
 /** Irregular splat silhouette in white; tint via material color. */
 export function makeSplatTexture(seedShift = 0): THREE.Texture {
+  return once('splat' + seedShift, () => {
   const c = canvas(128);
   const ctx = c.getContext('2d')!;
   ctx.fillStyle = '#ffffff';
@@ -258,9 +282,11 @@ export function makeSplatTexture(seedShift = 0): THREE.Texture {
     ctx.fill();
   }
   return tex(c);
+  });
 }
 
 export function makeRingTexture(): THREE.Texture {
+  return once('makeRingTexture', () => {
   const c = canvas(128);
   const ctx = c.getContext('2d')!;
   ctx.strokeStyle = '#ffffff';
@@ -274,9 +300,11 @@ export function makeRingTexture(): THREE.Texture {
   ctx.arc(64, 64, 34, 0, Math.PI * 2);
   ctx.stroke();
   return tex(c);
+  });
 }
 
 export function makeGlintTexture(): THREE.Texture {
+  return once('makeGlintTexture', () => {
   const c = canvas(64);
   const ctx = c.getContext('2d')!;
   const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
@@ -292,9 +320,11 @@ export function makeGlintTexture(): THREE.Texture {
   ctx.closePath();
   ctx.fill();
   return tex(c);
+  });
 }
 
 export function makeStripeTexture(a: string, b: string, n = 8): THREE.Texture {
+  return once(`stripe${a}${b}${n}`, () => {
   const c = canvas(128);
   const ctx = c.getContext('2d')!;
   for (let i = 0; i < n; i++) {
@@ -302,9 +332,11 @@ export function makeStripeTexture(a: string, b: string, n = 8): THREE.Texture {
     ctx.fillRect((i * 128) / n, 0, 128 / n, 128);
   }
   return tex(c, true, true);
+  });
 }
 
 export function makeTweedTexture(base: string, fleck: string): THREE.Texture {
+  return once(`tweed${base}${fleck}`, () => {
   const c = canvas(128);
   const ctx = c.getContext('2d')!;
   ctx.fillStyle = base;
@@ -317,6 +349,7 @@ export function makeTweedTexture(base: string, fleck: string): THREE.Texture {
   }
   ctx.globalAlpha = 1;
   return tex(c, true, true);
+  });
 }
 
 export function makeTextSprite(text: string, color = '#ffffff', font = 'bold 64px Georgia, serif'): THREE.Texture {
