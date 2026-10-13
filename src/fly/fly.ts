@@ -31,6 +31,8 @@ export class Fly {
   landedTime = 0;
   airTime = 0;
   invuln = 0;
+  /** Victory jig on top of the cake. */
+  celebrate = false;
   /** Recently-taken-off-from surface (for "escaped at the last moment" tricks). */
   lastTakeoff: { surface: Surface | null; time: number; from: THREE.Vector3 } = { surface: null, time: -9, from: V3() };
 
@@ -582,6 +584,12 @@ export class Fly {
           this.groomKind = Math.floor(rand() * 3);
         }
       }
+    }
+    if (this.celebrate) {
+      this.rubT = 1;
+      const hop = Math.max(0, Math.sin(t * 7)) * 0.025;
+      b.position.y = hop;
+      b.rotation.y = Math.sin(t * 3.5) * 0.5;
     }
     const rubbing = this.state === 'landed' && (this.rubT > 0 || (this.groomActive() && this.groomKind === 0));
     const headWash = this.state === 'landed' && this.groomActive() && this.groomKind === 1;

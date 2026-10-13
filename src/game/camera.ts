@@ -49,7 +49,7 @@ export class CameraRig {
       this.orbit += dt * 0.12;
       const r = 4.6;
       this.target.lerp(V3(0, 0.9, -0.4), damp(2, dt));
-      pos.set(Math.sin(this.orbit) * r * 0.7 + 0.6, 3.1 + Math.sin(this.orbit * 0.7) * 0.3, Math.cos(this.orbit) * r * 0.35 + 3.9);
+      pos.set(Math.sin(this.orbit) * r * 0.7 + 0.6, 3.6 + Math.sin(this.orbit * 0.7) * 0.3, Math.cos(this.orbit) * r * 0.35 + 3.7);
     } else if (this.mode === 'victory') {
       this.orbit += dt * 0.25;
       const c = this.focus;

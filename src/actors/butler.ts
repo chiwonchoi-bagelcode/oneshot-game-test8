@@ -17,7 +17,7 @@ const LOOP: [number, number][] = [
 ];
 const SERVE: [number, number, number][] = [
   // x, z, index of loop edge it hangs off
-  [-0.8, -0.42, 0], [-0.8, 0.62, 0], [0.8, 0.1, 2], [0.8, 1.25, 2], [-0.8, -1.55, 0], [0.8, -1.3, 2],
+  [-0.8, -0.6, 0], [-0.8, 0.5, 0], [0.8, -0.02, 2], [0.8, 1.2, 2], [-0.8, -1.65, 0], [0.8, -1.3, 2],
 ];
 
 export class Butler implements MessTarget {

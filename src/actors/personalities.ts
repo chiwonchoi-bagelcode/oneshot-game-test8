@@ -37,7 +37,7 @@ export interface Personality {
 export const PERSONALITIES: Record<GuestId, Personality> = {
   colonel: {
     name: '크럼프 대령', title: '깐깐한 퇴역 대령', blurb: '금방 질리지만 신문 반격이 번개 같다',
-    fedMul: 1.3, sympathy: 0.8, hearing: 1.1, irritability: 1.5, swatAt: 0.42, windup: 0.66, weapon: 'newspaper', reach: 0.98, hitR: 0.13,
+    fedMul: 1.3, sympathy: 0.8, hearing: 1.1, irritability: 1.5, swatAt: 0.42, windup: 0.66, weapon: 'newspaper', reach: 1.05, hitR: 0.13,
     cooldown: 1.1, eatEvery: [7, 12], drinkEvery: [9, 15], noseReact: 'slap', voice: 92, headTurn: 9, vanity: 1, reads: true,
   },
   reverend: {

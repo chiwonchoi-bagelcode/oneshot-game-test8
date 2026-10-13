@@ -340,14 +340,17 @@ export class PlateItem extends Item {
   /** Take a bite-sized morsel: returns a small mesh to put on a fork / in a hand. */
   takeBite(): THREE.Object3D | null {
     if (this.state === 'smashed') return null;
+    const visible = this.pieces.filter((p) => p.visible).length;
     for (let i = this.pieces.length - 1; i >= 0; i--) {
       const p = this.pieces[i];
       if (!p.visible) continue;
       this.bitesLeft[i]--;
       const morsel = buildFoodPiece(this.food);
       morsel.scale.setScalar(0.55);
-      if (this.bitesLeft[i] <= 0) p.visible = false;
-      else p.scale.multiplyScalar(0.72);
+      // the last morsel is nibbled forever (a plate never quite empties at a proper tea)
+      if (this.bitesLeft[i] <= 0 && visible > 1) p.visible = false;
+      else p.scale.multiplyScalar(visible > 1 ? 0.72 : 0.97);
+      if (p.scale.x < 0.45) p.scale.setScalar(0.45);
       return morsel;
     }
     return null;
@@ -369,8 +372,9 @@ export class PlateItem extends Item {
       this.plateGroup.rotation.z = randRange(-0.12, 0.12);
       this.plateGroup.rotation.x = randRange(-0.12, 0.12);
     }
-    mess.stain(top.clone().setY(TABLE.y), randRange(0.1, 0.16), color, 'food');
-    if (this.food === 'scone') mess.stain(top.clone().setY(TABLE.y).add(V3(0.05, 0, 0.02)), 0.07, COLORS.jam, 'food');
+    mess.stain(top.clone().setY(TABLE.y), randRange(0.15, 0.22), color, 'food');
+    mess.stain(top.clone().setY(TABLE.y).add(V3(randRange(-0.12, 0.12), 0, randRange(-0.12, 0.12))), randRange(0.06, 0.1), color, 'food');
+    if (this.food === 'scone') mess.stain(top.clone().setY(TABLE.y).add(V3(0.05, 0, 0.02)), 0.1, COLORS.jam, 'food');
     // Fling chunks
     const n = 2 + Math.floor(rand() * 2);
     for (let i = 0; i < n; i++) {

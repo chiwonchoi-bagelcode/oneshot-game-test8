@@ -267,6 +267,7 @@ export class Guest implements MessTarget {
         gain = kind === 'sneeze' ? 0.26 : 0.22;
       } else {
         if (obj) ctx.scene.remove(obj);
+        if (this.props.toupee && !this.toupeeLost && rand() < 0.5) this.smacked(source, point, 0.5);
         const s = kind === 'cream' ? 0.05 : 0.04;
         const d = blob(s, s * 0.6, s * 0.5, clay(color, { normal: 0.9 }), 10, false);
         const x = randRange(-0.05, 0.05), y = randRange(-0.04, 0.06);
@@ -325,7 +326,7 @@ export class Guest implements MessTarget {
     if (!this.active) return;
     const r = this.rig;
     const self = by === this;
-    if (this.props.toupee && !this.toupeeLost && !self) {
+    if (this.props.toupee && !this.toupeeLost) {
       this.toupeeLost = true;
       const tp = this.props.toupee;
       const from = tp.getWorldPosition(V3());
@@ -462,6 +463,7 @@ export class Guest implements MessTarget {
       this.lastSeen.copy(fly.pos);
       if (fly.buzzing && d < 1.2) this.interest = Math.max(this.interest, 2.6);
       else if (fly.state === 'landed' && (concern || onNose)) this.interest = Math.max(this.interest, 2.6);
+      else if (fly.state === 'landed' && this.onNeighbourInReach()) this.interest = Math.max(this.interest, 1.6);
       else if (!this.tracking) this.interest = Math.max(this.interest, 1.2);
       if (!this.tracking) {
         this.tracking = true;
@@ -516,6 +518,15 @@ export class Guest implements MessTarget {
     return false;
   }
 
+  /** The fly is sitting on a neighbour I could swat at. */
+  private onNeighbourInReach() {
+    const fly = ctx.fly;
+    const s = fly.landedOn;
+    if (fly.state !== 'landed' || !s || s.item || (!s.guest && !s.butler) || s.guest === this) return false;
+    if (this.p.weapon === 'flail' || this.p.weapon === 'hand') return false;
+    return this.inReach(fly.pos);
+  }
+
   private lookingNear(p: THREE.Vector3) {
     // landed fly is noticed if it's where they're looking (plate, glass, focus)
     return this.canSee(p, true);
@@ -554,8 +565,8 @@ export class Guest implements MessTarget {
         } else if (s.kind === 'nose' && s.guest === this) {
           this.irritation += dt * 0.9;
         } else if (s.guest && s.guest !== this && !s.item) {
-          // a fly on somebody else: irritating, mildly funny
-          this.irritation += dt * 0.12 * this.p.irritability;
+          // a fly on somebody else: irritating — and within swatting range, very tempting
+          this.irritation += dt * (this.onNeighbourInReach() ? 0.26 : 0.08) * this.p.irritability;
         }
       }
     }
@@ -1134,7 +1145,7 @@ export class Guest implements MessTarget {
       r.headPitchT = 0.1;
     } else if (this.props.newspaper) {
       const np = this.props.newspaper;
-      np.rolledT = 1;
+      np.rolledT = 0.55;
       if (np.group.parent !== R.hand) {
         R.hand.add(np.group);
       }
@@ -1160,8 +1171,16 @@ export class Guest implements MessTarget {
       R.target.copy(r.mouthWorld(V3())).addScaledVector(fwd, 0.07);
     }
     if (this.id === 'dandy' && Math.sin(t * 0.5) > 0.8 && !this.toupeeLost) {
-      // pat the hair-piece
+      // pat the hair-piece... and feel something crawling on it
       R.target.copy(r.headWorld(V3())).add(V3(0, r.b * 0.9, 0)).addScaledVector(fwd, -0.02);
+      const fs = ctx.fly.landedOn;
+      if (ctx.fly.state === 'landed' && fs?.guest === this && fs.kind === 'toupee' && this.swatCD <= 0) {
+        this.irritation = 1;
+        this.aim.copy(ctx.fly.pos);
+        this.aimLocked = false;
+        ctx.audio.voice(this, 'gasp');
+        this.setState('windup');
+      }
     }
     // chatting
     this.talkT -= dt;
@@ -1377,7 +1396,7 @@ export class Guest implements MessTarget {
       }
       // track the fly until we commit
       const prep = this.stT < prepT;
-      if (prep && this.seesFly && !this.aimLocked) {
+      if (prep && (this.seesFly || this.flyIsOnMe()) && !this.aimLocked) {
         this.aim.lerp(fly.pos, Math.min(1, dt * 14));
       }
       if (!prep && !this.aimLocked) {
@@ -1720,9 +1739,20 @@ export class Guest implements MessTarget {
     this.chairFallDir = rand() < 0.5 ? 1 : -1;
     ctx.audio.voice(this, 'hwurp');
     ctx.audio.sfx('chair', this.rig.root.position);
-    // the plate is shoved away, napkin dropped
+    // the plate is shoved away, the glass goes over, the napkin hits the lawn
     const away = V3().subVectors(this.plate.worldPos(V3()), this.rig.root.position).setY(0).normalize().multiplyScalar(0.07);
     this.plate.group.position.add(away);
+    if (this.drink.state === 'ok' && rand() < 0.65) {
+      ctx.later(0.5, () => {
+        const toward = V3().subVectors(this.rig.root.position, this.drink.worldPos(V3())).setY(0);
+        this.drink.topple(toward.lengthSq() > 1e-4 ? toward : V3(rand() - 0.5, 0, rand() - 0.5));
+        ctx.audio.sfx('clink', this.drink.worldPos(V3()));
+      });
+    }
+    const nap = blob(0.08, 0.025, 0.07, clay('#fbf8f2', { normal: 1.2 }), 10);
+    nap.position.copy(this.rig.root.position).add(V3(randRange(-0.2, 0.2), 0.02, randRange(-0.2, 0.2)));
+    nap.rotation.y = rand() * 3;
+    ctx.scene.add(nap);
     ctx.game.onGuestFlee(this);
     ctx.emit({ type: 'flee', pos: this.rig.headWorld(V3()), loud: 1.0, gross: 0.1, source: this, chain: true });
   }

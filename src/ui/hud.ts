@@ -118,6 +118,7 @@ export class Hud {
   }
 
   hint(text: string, dur = 0, urgent = false) {
+    if (text && this.screen) return;
     if (!text) {
       this.hintEl.classList.remove('on', 'urgent');
       this.hintT = 0;
@@ -180,7 +181,7 @@ export class Hud {
       </div>
       <div>
         <button class="bigbtn interactive" id="startbtn">윙윙~ 파티 망치러 가기</button>
-        <div class="howto">식탁 위 원하는 곳을 <b>탭</b> — 그곳으로 쌩 날아갑니다<br/>날면 <b>윙윙</b>, 앉으면 조용. 신문이 말리면 <b>도망!</b><br/>손님을 모두 질리게 하고 <b>케이크</b>를 차지하세요</div>
+        <div class="howto">식탁 위 원하는 곳을 <b>탭</b> — 그곳으로 쌩 날아갑니다<br/>날면 <b>윙윙</b>, 앉으면 조용. 신문이 말리면 <b>도망!</b><br/>손님을 모두 질리게 하고 <b>케이크</b>를 차지하세요<br/><span style="opacity:.8">🔊 소리를 켜고 플레이하세요 — 윙윙 소리가 무기입니다</span></div>
       </div>`;
     this.root.append(s);
     this.screen = s;
@@ -254,6 +255,7 @@ export class Hud {
       <h2 class="${r.win ? '' : 'bad'}">${title}</h2>
       <div class="rank">${rank}</div>
       <div class="score">점수 <b>${r.score.toLocaleString()}</b></div>
+      <div class="row" id="againrow"></div>
       <div class="stats">
         <div class="stat"><b>${mm}:${String(ss).padStart(2, '0')}</b><span>걸린 시간</span></div>
         <div class="stat"><b>${r.gone} / 6</b><span>질려서 떠난 손님</span></div>
@@ -268,7 +270,8 @@ export class Hud {
       this.onRetry();
     });
     row.append(again);
-    p.append(row);
+    (p.querySelector('#againrow') as HTMLElement).replaceWith(row);
+    row.style.margin = '2px 0 12px';
     s.append(p);
     this.root.append(s);
     this.screen = s;

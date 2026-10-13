@@ -145,7 +145,7 @@ export class Mess {
   /** Liquid poured out at `mouth`. Soaks the cloth and, near an edge, drips into a slippery puddle. */
   spillAt(mouth: THREE.Vector3, vol: number, color: string, src?: Item) {
     const p = mouth.clone();
-    const r = clamp(0.09 + vol * 0.14, 0.07, 0.26);
+    const r = clamp(0.12 + vol * 0.2, 0.09, 0.34);
     const insideTable = Math.abs(p.x) < TABLE.halfW + 0.05 && Math.abs(p.z) < TABLE.halfL + 0.05;
     if (insideTable) this.stain(V3(clamp(p.x, -TABLE.halfW + 0.04, TABLE.halfW - 0.04), TABLE.y, clamp(p.z, -TABLE.halfL + 0.04, TABLE.halfL - 0.04)), r, color, 'liquid');
     const toSide = TABLE.halfW - Math.abs(p.x);
@@ -322,7 +322,8 @@ export class Mess {
     // contaminate / stain what's on the table in front
     const land = origin.clone().addScaledVector(V3(d.x, 0, d.z).normalize(), 0.55).setY(TABLE.y);
     if (Math.abs(land.x) < TABLE.halfW && Math.abs(land.z) < TABLE.halfL) {
-      this.stain(land, kind === 'sneeze' ? 0.09 : 0.17, color, 'liquid');
+      this.stain(land, kind === 'sneeze' ? 0.12 : 0.24, color, 'liquid');
+      this.stain(land.clone().add(V3(randRange(-0.15, 0.15), 0, randRange(-0.15, 0.15))), kind === 'sneeze' ? 0.06 : 0.1, color, 'liquid');
       for (const it of ctx.items) {
         if (!it.isFood) continue;
         if (it.worldPos(_v1).distanceTo(land) < 0.35) it.contam = Math.min(1, it.contam + 0.6);
@@ -446,13 +447,13 @@ export class Mess {
     if (p.kind === 'jelly') {
       p.obj.scale.set(0.11, 0.035, 0.11);
       p.obj.rotation.set(0, 0, 0);
-      this.stain(pos, 0.12, p.color, 'food', y === 0);
+      this.stain(pos, 0.17, p.color, 'food', y === 0);
       ctx.audio.sfx('splat', pos);
     } else {
       p.obj.scale.multiplyScalar(1.0);
       p.obj.scale.y *= 0.4;
       p.obj.rotation.set(0, p.obj.rotation.y, 0);
-      this.stain(pos, 0.06, p.color, 'food', y === 0);
+      this.stain(pos, 0.09, p.color, 'food', y === 0);
       ctx.audio.sfx('plop', pos);
     }
     // landing on someone's plate contaminates it

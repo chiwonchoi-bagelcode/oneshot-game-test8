@@ -46,10 +46,12 @@ export class Newspaper {
   update(dt: number) {
     this.rolled += (this.rolledT - this.rolled) * Math.min(1, dt * 9);
     const r = this.rolled;
-    this.sheet.visible = r < 0.85;
-    this.sheet.scale.set(1 - r * 0.85, 1, 1);
-    this.roll.visible = r > 0.5;
-    this.roll.scale.set(1, 0.6 + r * 0.4, 1);
+    // 0 = open for reading, ~0.55 = loosely folded baton, 1 = rolled tight for swatting
+    this.sheet.visible = r < 0.5;
+    this.sheet.scale.set(Math.max(0.05, 1 - r * 1.7), 1, 1);
+    this.roll.visible = r >= 0.5;
+    const loose = 1 - Math.min(1, Math.max(0, (r - 0.5) / 0.5));
+    this.roll.scale.set(1 + loose * 1.1, 0.75 + (1 - loose) * 0.25, 1 + loose * 0.6);
   }
 }
 
@@ -273,6 +275,28 @@ export function decorate(id: GuestId | 'butler', rig: Rig): Props {
         h.add(curl);
       }
       spectacles(rig, L.eyeR * 1.35, '#3a2a20');
+      // a little flowered pillbox hat perched on the perm
+      const ghat = new THREE.Group();
+      const felt = clay('#6f8fb8', { normal: 0.8, rough: 0.55 });
+      const crownG = cylinder(0.075, 0.085, 0.06, felt, 20);
+      ghat.add(crownG);
+      const brimG = cylinder(0.12, 0.12, 0.012, felt, 24);
+      brimG.position.y = -0.028;
+      ghat.add(brimG);
+      for (let i = 0; i < 5; i++) {
+        const a2 = i * 0.5 - 0.6;
+        const fl = blob(0.022, 0.018, 0.022, clay(['#f7c548', '#fff3f0', '#f05a7e'][i % 3], { normal: 1.2 }), 8);
+        fl.position.set(Math.cos(a2) * 0.08, 0.0, Math.sin(a2) * 0.08);
+        ghat.add(fl);
+      }
+      const veil = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 6, 0, Math.PI * 2, 0, 0.9), new THREE.MeshStandardMaterial({ color: '#2b2b3a', transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }));
+      veil.position.set(0, -0.02, 0.02);
+      ghat.add(veil);
+      ghat.position.set(0.02, b * 1.12, -0.01);
+      ghat.rotation.z = -0.18;
+      h.add(ghat);
+      props.hat = ghat;
+      props.hasHat = true;
       // pearls
       const pearl = clay('#fbf6ec', { rough: 0.15, normal: 0.05, envI: 1.4 });
       for (let i = 0; i < 14; i++) {

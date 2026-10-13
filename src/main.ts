@@ -32,6 +32,8 @@ hud.onMute = () => {
   return ctx.audio.muted;
 };
 hud.showTitle();
+// iOS needs a touchend/click to really start audio
+for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, () => ctx.audio.unlock(), { passive: true });
 
 function resize() {
   const w = gameEl.clientWidth, h = gameEl.clientHeight;

@@ -91,14 +91,14 @@ export class Game {
       ctx.guests.push(g);
     }
     for (const g of ctx.guests) g.setupItems();
-    this.cake = new CakeItem().place(0, -0.2);
+    this.cake = new CakeItem().place(0, -0.32);
     ctx.items.push(
       this.cake,
-      new JellyItem('#5fbf3a').place(0.14, 0.4),
-      new JellyItem('#e0304a').place(-0.16, -1.42),
-      new StandItem().place(0.26, -1.2),
-      new TeapotItem().place(0.2, 1.38),
-      new VaseItem().place(-0.08, 0.9),
+      new JellyItem('#5fbf3a').place(0.1, 0.3),
+      new JellyItem('#e0304a').place(-0.18, -1.55),
+      new StandItem().place(0.26, -1.32),
+      new TeapotItem().place(0.22, 1.3),
+      new VaseItem().place(-0.12, 0.72),
     );
     ctx.butler = new Butler();
     ctx.fly = new Fly();
@@ -125,11 +125,13 @@ export class Game {
   }
 
   reset() {
-    // drop the old scene; a new one is built from scratch
+    // free GPU buffers of the old scene; shared geometries are simply re-uploaded when reused
+    const seen = new Set<THREE.BufferGeometry>();
     this.stage.scene.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (m.isMesh && m.geometry && !(m.geometry as THREE.BufferGeometry & { _cached?: boolean })._cached) {
-        /* geometries are mostly cached/shared; leave them to GC */
+      if (m.isMesh && m.geometry && !seen.has(m.geometry)) {
+        seen.add(m.geometry);
+        m.geometry.dispose();
       }
     });
     this.build();
@@ -293,7 +295,7 @@ export class Game {
     }
     if (s.item?.isFood && s.item.owner && !this.hintFlags.has('food')) {
       this.hintFlags.add('food');
-      setTimeout(() => this.hud.hint('주인이 음식 위의 파리를 보면 점점 질려요 — 초록 게이지가 차면 자리를 뜹니다', 5), 1200);
+      ctx.later(1.2, () => this.phase === 'play' && this.hud.hint('주인이 음식 위의 파리를 보면 점점 질려요 — 초록 게이지가 차면 자리를 뜹니다', 5));
     }
   }
 
@@ -355,7 +357,7 @@ export class Game {
     ctx.audio.sfx('flee');
     if (!this.hintFlags.has('flee')) {
       this.hintFlags.add('flee');
-      setTimeout(() => this.hud.hint('한 명 퇴장! 모두 쫓아내고 한가운데 케이크를 차지하세요', 4), 1600);
+      ctx.later(1.6, () => this.phase === 'play' && this.hud.hint('한 명 퇴장! 모두 쫓아내고 한가운데 케이크를 차지하세요', 4));
     }
   }
 
@@ -377,7 +379,7 @@ export class Game {
     this.prank('cake');
     this.pranksFound.add('cake');
     const fly = ctx.fly;
-    fly.state = 'scripted';
+    fly.celebrate = true;
     this.cam.focus.copy(this.cake.topWorld(V3()));
     this.cam.setMode('victory');
     ctx.audio.victory();
