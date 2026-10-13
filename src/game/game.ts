@@ -464,6 +464,11 @@ export class Game {
         for (const t of due) t.fn();
       }
     }
+    // 33⅓ rpm — a fly riding the record drags it (and the music) down a little
+    const rec = ctx.garden.gramophone.record;
+    const riding = fly.state === 'landed' && fly.landedOn?.anchor === rec;
+    rec.rotation.y += dt * (riding ? 2.4 : 3.5);
+    ctx.audio.recordDrag = riding ? 1 : 0;
     for (const g of ctx.guests) g.update(dt);
     ctx.butler.update(dt);
     for (const it of ctx.items) it.update(dt);

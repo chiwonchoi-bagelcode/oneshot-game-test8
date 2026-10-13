@@ -4,7 +4,7 @@ import { clay, invisibleMat } from '../render/materials';
 import { blob, capsule, cylinder, lathe, mesh, rbox, torus } from '../render/shapes';
 import { makeClothTexture, makeLawnTexture, makeGravelTexture, makeStripeTexture } from '../render/textures';
 import { rand, randRange } from '../core/math';
-import { mergeStatic } from '../render/merge';
+import { mergeStatic, noMerge } from '../render/merge';
 import type { Surface } from '../game/types';
 
 export interface Garden {
@@ -136,9 +136,17 @@ function gramophone(): Garden['gramophone'] {
   g.add(box);
   const record = cylinder(0.14, 0.14, 0.01, clay('#1a1a1a', { rough: 0.2, normal: 0.05 }), 28);
   record.position.y = 0.85;
-  g.add(record);
+  g.add(noMerge(record));
   const label = cylinder(0.04, 0.04, 0.012, clay('#c0302a'), 16, false);
   record.add(label);
+  const dot = cylinder(0.008, 0.008, 0.014, clay('#f4e0a0'), 8, false);
+  dot.position.x = 0.025;
+  record.add(dot);
+  // the fly can ride the spinning record
+  const recProxy = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.03, 16), invisibleMat);
+  recProxy.position.y = 0.01;
+  record.add(recProxy);
+  addSurface({ kind: 'prop', proxy: recProxy, anchor: record, enabled: true, priority: 3 });
   const arm = capsule(0.008, 0.14, brass, 6);
   arm.position.set(0.1, 0.9, 0.04);
   arm.rotation.set(0, 0, Math.PI / 2 - 0.3);

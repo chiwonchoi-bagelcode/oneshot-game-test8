@@ -54,6 +54,8 @@ export class AudioEngine {
   private noiseBuf!: AudioBuffer;
   private buzzNoiseGain!: GainNode;
   muted = false;
+  /** 0..1: something heavy (a fly) is riding the gramophone record */
+  recordDrag = 0;
   private kick = 0;
   private landBlip = 0;
   private musicOn = false;
@@ -630,7 +632,7 @@ export class AudioEngine {
     const late = G.game ? clamp01((G.game.clock - 300) / 120) : 0;
     this.tempo = (this.mood === 'triumph' ? 126 : 100 + late * 26) * (1 + (1 - ele) * 0.06);
     const spb = 60 / this.tempo;
-    const wow = (1 - ele) * 45 + (G.game?.hornBlast ? 60 : 0);
+    const wow = (1 - ele) * 45 + (G.game?.hornBlast ? 60 : 0) + this.recordDrag * 70;
     // crackle
     this.crackleT -= dt;
     if (this.crackleT <= 0) {
@@ -648,7 +650,7 @@ export class AudioEngine {
         this.noise(this.musicBus, this.musicT, 0.06, 'bandpass', 2000, 1, this.perc(1, 0.05));
         this.noteIdx = Math.max(0, this.noteIdx - 2);
       }
-      const det = Math.sin(this.musicT * 1.3) * wow + (Math.random() - 0.5) * wow * 0.4;
+      const det = Math.sin(this.musicT * 1.3) * wow + (Math.random() - 0.5) * wow * 0.4 - this.recordDrag * 120;
       this.pluck(this.musicT, mtof(midi + tr), beats * spb, det, 0.5);
       // bass on the downbeat of each bar
       const barBeat = this.beat % 3;
