@@ -1,0 +1,21 @@
+{
+  "name": "shipari-garden-party",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "쉬파리의 가든파티 — 휴대폰 세로 화면용 3D 장난 액션 웹 게임",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build && node scripts/inline-build.mjs",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.3.4"
+  }
+}
