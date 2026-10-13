@@ -1,5 +1,4 @@
 import './style.css';
-import * as THREE from 'three';
 import { createStage } from './render/stage';
 import { ctx } from './game/ctx';
 import { AudioEngine } from './audio/audio';
@@ -75,4 +74,4 @@ requestAnimationFrame(loop);
 // handy for automated play-testing
 (window as unknown as Record<string, unknown>).__game = game;
 (window as unknown as Record<string, unknown>).__ctx = ctx;
-(window as unknown as Record<string, unknown>).__THREE = THREE;
+if (import.meta.env.DEV) void import('three').then((T) => ((window as unknown as Record<string, unknown>).__THREE = T));
